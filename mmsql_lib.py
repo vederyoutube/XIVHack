@@ -1,4 +1,4 @@
-import mysql.connector
+import mysql.connector, hashlib
 from mysql.connector import Error
 
 
@@ -29,7 +29,9 @@ def user_reg(login, passwd):
     if len(res) == 0:
         # cursor.execute('INSERT INTO User_reg (login, password) VALUES (?, ?)', (login, passwd))
         query = "INSERT INTO User_reg (login, password) VALUES (%s, %s)"
-        cursor.execute(query,(login, passwd, ))
+        pass_md5 = hashlib.md5(bytes(passwd, 'utf-8'))
+        pass_hash = pass_md5.hexdigest()
+        cursor.execute(query,(login, pass_hash, ))
         print(f"successful registred user ({login}, {passwd})")
         con.commit()
         con.close()
@@ -45,7 +47,9 @@ def sign_in(login, passwd):
     cursor = con.cursor()
     # cursor.execute('SELECT login, password FROM User_reg WHERE login = ? AND password = ?', (login, passwd))
     query = "SELECT login, password FROM User_reg WHERE login = %s AND password = %s"
-    cursor.execute(query,(login, passwd))
+    pass_md5 = hashlib.md5(bytes(passwd, 'utf-8'))
+    pass_hash = pass_md5.hexdigest()
+    cursor.execute(query,(login, pass_hash))
     res = cursor.fetchall()
     print(res)
     if len(res) == 1:
@@ -119,5 +123,6 @@ def mem_reg(name, desc, team_name):
         print("member alredy used")
         con.close()
         return False
-test_ar = [["test", "test"],["test", "test"]]
-team_reg("test", "test", "test", "test", test_ar)
+test_ar = [["test", "test1"],["test", "test"]]
+# team_reg("test", "test", "test", "test", test_ar)
+# sign_in("test", "test")
