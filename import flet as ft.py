@@ -13,17 +13,18 @@ def main(page: ft.Page):
     page.add(
     BasicHorizontalCarousel(
     page=page,
-    items_count=3,
+    items_count=1,
+    padding=50,
     # auto_cycle=AutoCycle(duration=1),
     items=[
         Container(
-            content=Text(value=str(i), size=20),
-            height=200,
-            width=300,
+            content=Text(value=str(), size=30),
+            height=400,
+            width=600,
             bgcolor='red',
             border_radius=15,
             alignment=alignment.center,
-        ) for i in range(10)
+        )
     ],
     buttons=[
         FloatingActionButton(
@@ -38,6 +39,12 @@ def main(page: ft.Page):
     vertical_alignment=CrossAxisAlignment.CENTER,
     items_alignment=MainAxisAlignment.CENTER
 )
+)
+    page.add(
+        ft.Row(controls=[
+        ft.ElevatedButton(text="Оценить команду")
+    ]
+    )
 )
 
 ft.app(target=main)
