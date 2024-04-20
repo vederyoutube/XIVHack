@@ -184,10 +184,11 @@ def register(page: ft.Page):
         ], ft.MainAxisAlignment.CENTER
     )    
     member_info = ft.TextField(label='Краткая информация', width=500, max_length=255)    
-    def member_check():
+    def member_check(_):
         members[0].append(member_name.value)
         members[1].append(member_info.value)
-
+        global count
+        count += 1
         member_name.value = None
         member_info.value = None
         page.update()
@@ -195,7 +196,7 @@ def register(page: ft.Page):
     member_button = ft.Row(
         [
             ft.ElevatedButton(
-                f'Подтвердить Участника №{count}', on_click=member_check(),
+                f'Подтвердить Участника №{count}', on_click=member_check
             )
         ], ft.MainAxisAlignment.CENTER      
     )
