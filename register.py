@@ -2,8 +2,8 @@ import flet as ft
 import os
 import mmsql_lib as sql
 mn = None
-mn1 = None
-count = 0
+mv = None
+count = 1
 members = [[],[]]
 def register(page: ft.Page):
     page.scroll = 'AUTO'
@@ -71,38 +71,42 @@ def register(page: ft.Page):
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
 
-    def add_member(_):
-        global count
-        count += 1
-        member_label = ft.Text(f'Участник №{count}')
-        member_name = ft.TextField(label='ФИО Участника', width=500)
-        member_photo = ft.Row(
-            [
-                ft.ElevatedButton(
-                    "Загрузить фото участника",
-                    icon=ft.icons.UPLOAD_FILE,
-                    on_click=lambda _: pick_files_dialog.pick_files(
-                        allowed_extensions=['pdf', 'png', 'jpeg']
-                    ),
-                ),
-                selected_files,
-            ], ft.MainAxisAlignment.CENTER
-        )    
-        member_info = ft.TextField(label='Краткая информация', width=500, max_length=255)
-        member_button = ft.Row(
-            [
-                ft.ElevatedButton(
-                    f'Подтвердить Участника №{count}', on_click=member_check(member_name, member_info)
-                )
-            ]
-        )
-        page.add(member_label, member_name, member_photo, member_info, member_button)
-        page.update()
+    
 
-    def member_check(name, info):
-        name1 = name.value
-        info1 = info.value
-        print(name, info)
+    # def add_member(_):
+    #     global count
+    #     count += 1
+    #     member_label = ft.Text(f'Участник №{count}')
+    #     member_name = ft.TextField(label='ФИО Участника', width=500)
+    #     member_photo = ft.Row(
+    #         [
+    #             ft.ElevatedButton(
+    #                 "Загрузить фото участника",
+    #                 icon=ft.icons.UPLOAD_FILE,
+    #                 on_click=lambda _: pick_files_dialog.pick_files(
+    #                     allowed_extensions=['pdf', 'png', 'jpeg']
+    #                 ),
+    #             ),
+    #             selected_files,
+    #         ], ft.MainAxisAlignment.CENTER
+    #     )    
+    #     member_info = ft.TextField(label='Краткая информация', width=500, max_length=255)
+    #     member_button = ft.Row(
+    #         [
+    #             ft.ElevatedButton(
+    #                 f'Подтвердить Участника №{count}', on_click=member_check(member_name, member_info)
+    #             )
+    #         ]
+    #     )
+    #     def member_check(name, info):
+    #         global mn, mv
+    #         mn = name.value
+    #         mv = info.value
+    #         print(name, info)
+    #     page.add(member_label, member_name, member_photo, member_info, member_button)
+    #     page.update()
+
+    
 
     def on_register_click(_):
         team_name_value = team_name.value
@@ -128,10 +132,6 @@ def register(page: ft.Page):
             show_banner(error_text)
         else: 
             print(email)
-            members[0].append(mn)
-            members[1].append(mn1)
-            print(mn,mn1)
-            print(members)
             sql.team_reg(team_name_value, email_value, login_value, password_value, members)
             
 
@@ -167,9 +167,41 @@ def register(page: ft.Page):
         on_click=on_register_click  
     ) 
 
-    add_member_button = ft.ElevatedButton("Добавить участника", on_click=add_member)
+    # add_member_button = ft.ElevatedButton("Добавить участника", on_click=add_member)
 
-    page.add(register, void1, team_name, team_banner,  add_member_button, email, login, password, b)
+    member_label = ft.Text(f'Участник №{count}')
+    member_name = ft.TextField(label='ФИО Участника', width=500)
+    member_photo = ft.Row(
+        [
+            ft.ElevatedButton(
+                "Загрузить фото участника",
+                icon=ft.icons.UPLOAD_FILE,
+                on_click=lambda _: pick_files_dialog.pick_files(
+                    allowed_extensions=['pdf', 'png', 'jpeg']
+                ),
+            ),
+            selected_files,
+        ], ft.MainAxisAlignment.CENTER
+    )    
+    member_info = ft.TextField(label='Краткая информация', width=500, max_length=255)    
+    def member_check():
+        members[0].append(member_name.value)
+        members[1].append(member_info.value)
+
+        member_name.value = None
+        member_info.value = None
+        page.update()
+
+    member_button = ft.Row(
+        [
+            ft.ElevatedButton(
+                f'Подтвердить Участника №{count}', on_click=member_check(),
+            )
+        ], ft.MainAxisAlignment.CENTER      
+    )
+
+
+    page.add(register, void1, team_name, team_banner, member_label, member_name, member_photo, member_info,member_button, email, login, password, b)
     page.update()
 
-ft.app(target=register,) #view=ft.AppView.WEB_BROWSER)
+ft.app(target=register, view=ft.AppView.WEB_BROWSER)
