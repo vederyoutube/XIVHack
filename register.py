@@ -1,11 +1,16 @@
 import flet as ft
 import os
-import re
-
+import mmsql_lib as sql
+mn = None
+mn1 = None
+count = 0
+members = [[],[]]
 def register(page: ft.Page):
+    page.scroll = 'AUTO'
+
     def pick_files_result(e: ft.FilePickerResultEvent):
         for file in e.files:
-            if os.path.getsize(file.path) > 2 * 1024 * 1024:  # Проверяем размер файла
+            if os.path.getsize(file.path) > 2 * 1024 * 1024: 
                 selected_files.value = 'Файл слишком большой!'
                 selected_files.update()
                 return
@@ -13,16 +18,15 @@ def register(page: ft.Page):
             ", ".join(map(lambda f: f.name, e.files)) if e.files else "Cancelled!"
         )
         selected_files.update()
-    
+        page.update()
+
     def validate_email(email):
-        # Проверка корректности ввода адреса электронной почты
         if "@" in email and "." in email:
             return None
         else:
             return "Введите корректный адрес электронной почты"
 
     def validate_password(password):
-        # Проверка пароля на соответствие требованиям
         if len(password) < 8:
             return "Пароль должен содержать не менее 8 символов"
         if not any(char.isupper() for char in password):
@@ -39,60 +43,102 @@ def register(page: ft.Page):
         page.banner.open = False
         page.update()
 
-
-
     def show_banner(e):
+        page.banner = ft.Banner(
+            bgcolor=ft.colors.AMBER_100,
+            leading=ft.Icon(ft.icons.WARNING_AMBER_ROUNDED, color=ft.colors.AMBER, size=40),
+            content=ft.Text(e),
+            actions=[
+                ft.TextButton("OK", on_click=close_banner),
+            ],)
         page.banner.open = True
         page.update()
 
+    def validate_fields(team_name, email, login, password):
+        if not team_name:
+            return "Пожалуйста, введите название команды"
+        if not email:
+            return "Пожалуйста, введите адрес электронной почты"
+        if not login:
+            return "Пожалуйста, введите логин"
+        if not password:
+            return "Пожалуйста, введите пароль"
+        return None
+        
     pick_files_dialog = ft.FilePicker(on_result=pick_files_result)
     selected_files = ft.Text()
-
-    page.overlay.append(pick_files_dialog)
 
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
 
+    def add_member(_):
+        global count
+        count += 1
+        member_label = ft.Text(f'Участник №{count}')
+        member_name = ft.TextField(label='ФИО Участника', width=500)
+        member_photo = ft.Row(
+            [
+                ft.ElevatedButton(
+                    "Загрузить фото участника",
+                    icon=ft.icons.UPLOAD_FILE,
+                    on_click=lambda _: pick_files_dialog.pick_files(
+                        allowed_extensions=['pdf', 'png', 'jpeg']
+                    ),
+                ),
+                selected_files,
+            ], ft.MainAxisAlignment.CENTER
+        )    
+        member_info = ft.TextField(label='Краткая информация', width=500, max_length=255)
+        member_button = ft.Row(
+            [
+                ft.ElevatedButton(
+                    f'Подтвердить Участника №{count}', on_click=member_check(member_name, member_info)
+                )
+            ]
+        )
+        page.add(member_label, member_name, member_photo, member_info, member_button)
+        page.update()
+
+    def member_check(name, info):
+        name1 = name.value
+        info1 = info.value
+        print(name, info)
+
     def on_register_click(_):
-        # Обработчик нажатия кнопки "Регистрация"
+        team_name_value = team_name.value
         email_value = email.value
+        login_value = login.value
         password_value = password.value
 
-        # Проверка данных
+        field_error = validate_fields(team_name_value, email_value, login_value, password_value)
         email_error = validate_email(email_value)
         password_error = validate_password(password_value)
 
-        # Список для хранения сообщений об ошибках
         error_messages = []
 
         if email_error:
-            # Если есть ошибка в адресе электронной почты, добавляем сообщение об ошибке в список
             error_messages.append("Ошибка в адресе электронной почты: " + email_error)
         if password_error:
-            # Если есть ошибка в пароле, добавляем сообщение об ошибке в список
             error_messages.append("Ошибка в пароле: " + password_error)
+        if field_error:
+            error_messages.append("Заполните все поля" )
 
         if error_messages:
-            # Если есть хотя бы одна ошибка, объединяем все сообщения об ошибках в одно
-            error_message = "\n".join(error_messages)
-            # Выводим объединенное сообщение об ошибках в консоль
-            page.banner = ft.Banner(
-                bgcolor=ft.colors.AMBER_100,
-                leading=ft.Icon(ft.icons.WARNING_AMBER_ROUNDED, color=ft.colors.AMBER, size=40),
-                content=ft.Text(
-                    error_message
-                ),
-                actions=[
-                    ft.TextButton("OK", on_click=close_banner),
-        \
-                ],
-            )
+            error_text = "\n".join(error_messages)
+            show_banner(error_text)
+        else: 
+            print(email)
+            members[0].append(mn)
+            members[1].append(mn1)
+            print(mn,mn1)
+            print(members)
+            sql.team_reg(team_name_value, email_value, login_value, password_value, members)
+            
 
     register = ft.Text('Регистрация', size=32)
     void1 = ft.Text(size=42)
-    team_name = ft.TextField(label='Название команды', width=500)
-    
-    # Поле для загрузки баннера команды
+    team_name = ft.TextField(label='Название команды', width=500, max_length=20)
+
     team_banner = ft.Row(
             [
                 ft.ElevatedButton(
@@ -105,12 +151,11 @@ def register(page: ft.Page):
                 selected_files,
             ], ft.MainAxisAlignment.CENTER
         )
-    
-    email = ft.TextField(label='Электронная почта', width=500, hint_text='example@ex.com')
-    login = ft.TextField(label="Логин", width=500)
-    password = ft.TextField(label="Пароль", password=True, hint_text='***********', width=500)
 
-    # Кнопка "Регистрация"
+    email = ft.TextField(label='Электронная почта', width=500, hint_text='example@example.org')
+    login = ft.TextField(label="Логин", width=500)
+    password = ft.TextField(label="Пароль", password=True, hint_text='***********', width=500,)
+
     b = ft.ElevatedButton(
         content=ft.Container(
             content=ft.Column(
@@ -119,9 +164,12 @@ def register(page: ft.Page):
                 ],
             ), 
         ),
-        on_click=on_register_click  # Устанавливаем обработчик нажатия кнопки
-    )
+        on_click=on_register_click  
+    ) 
 
-    page.add(register, void1, team_name, team_banner, email, login, password, b)
+    add_member_button = ft.ElevatedButton("Добавить участника", on_click=add_member)
 
-ft.app(target=register)
+    page.add(register, void1, team_name, team_banner,  add_member_button, email, login, password, b)
+    page.update()
+
+ft.app(target=register,) #view=ft.AppView.WEB_BROWSER)
