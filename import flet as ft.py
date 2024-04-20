@@ -14,7 +14,7 @@ def main(page: ft.Page):
     BasicHorizontalCarousel(
     page=page,
     items_count=3,
-    auto_cycle=AutoCycle(duration=0.1),
+    # auto_cycle=AutoCycle(duration=1),
     items=[
         Container(
             content=Text(value=str(i), size=20),
@@ -37,7 +37,7 @@ def main(page: ft.Page):
     ],
     vertical_alignment=CrossAxisAlignment.CENTER,
     items_alignment=MainAxisAlignment.CENTER
-    )
+)
 )
 
 ft.app(target=main)
