@@ -183,5 +183,5 @@ def update_team(team_name = None, team_mail = None, team_pass = None, team_login
 
 # test_ar = [["test", "test1"],["test", "test"]]
 # team_reg("test", "test", "test", "test", test_ar)
-sign_in("test2", "test2")
-update_team(Nmember_name="test2", member_name="test1")
+# sign_in("test2", "test2")
+# update_team(Nmember_name="test2", member_name="test1")
