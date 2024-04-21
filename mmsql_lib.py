@@ -1,7 +1,6 @@
 import mysql.connector, hashlib
 from mysql.connector import Error
-
-
+import requests, urllib.request, os
 log = None
 teamN = None
 
@@ -181,7 +180,104 @@ def update_team(team_name = None, team_mail = None, team_pass = None, team_login
         con.commit()
         con.close()
 
-# test_ar = [["test", "test1"],["test", "test"]]
+def Banner_create(Banner):
+    temp = None
+    con = create_connection("a0947494.xsph.ru", "a0947494_teams", "HzqIAQEc", "a0947494_teams")
+    cursor = con.cursor()
+    query = "SELECT login FROM User_reg WHERE login = %s"
+    cursor.execute(query,(log, ))
+    file_name = cursor.fetchone()[0]
+    file_Sname, file_ext = os.path.splitext(Banner)
+    new_name = file_name + file_ext
+    print(new_name)
+    temp = Banner
+    os.rename(Banner, new_name)
+    files = {'file': open(new_name, 'rb')}
+    r = requests.post('http://a0947494.xsph.ru/upload.php', files=files)
+    print(r.status_code, "\n",r.text)
+    con.commit()
+    con.close()
+    os.rename(new_name, temp)
+    if r.status_code == 200: return True
+    else: return False    
+
+def Banner_load():
+    import urllib.request
+    con = create_connection("a0947494.xsph.ru", "a0947494_teams", "HzqIAQEc", "a0947494_teams")
+    cursor = con.cursor()
+    query = 'SELECT login FROM User_reg WHERE login = %s'
+    cursor.execute(query,(log, ))
+    file_name = cursor.fetchone()[0]
+    try:
+        destination = 'banner.png'
+        url = 'http://a0947494.xsph.ru/uploaded_files/' + file_name + '.png'
+        urllib.request.urlretrieve(url, destination)
+    except:
+        try:
+            destination = 'banner.jpeg'
+            url = 'http://a0947494.xsph.ru/uploaded_files/' + file_name + '.jpeg'
+            urllib.request.urlretrieve(url, destination)
+        except:
+            try:
+                destination = 'banner.pdf'
+                url = 'http://a0947494.xsph.ru/uploaded_files/' + file_name + '.pdf'
+                urllib.request.urlretrieve(url, destination)
+            except:
+                return True
+
+def Banner_create_mem(Banner, Name):
+    temp = None
+    con = create_connection("a0947494.xsph.ru", "a0947494_teams", "HzqIAQEc", "a0947494_teams")
+    cursor = con.cursor()
+    query = "SELECT ID FROM Member_list WHERE Member_name = %s AND Team_name = %s"
+    cursor.execute(query,(Name, teamN))
+    file_name = cursor.fetchone()[0]
+    print(file_name)
+    file_Sname, file_ext = os.path.splitext(Banner)
+    new_name =  str(file_name) + file_ext
+    print(new_name)
+    temp = Banner
+    os.rename(Banner, new_name)
+    files = {'file': open(new_name, 'rb')}
+    r = requests.post('http://a0947494.xsph.ru/upload.php', files=files)
+    print(r.status_code, "\n",r.text)
+    con.commit()
+    con.close()
+    os.rename(new_name, temp)
+    if r.status_code == 200: return True
+    else: return False    
+
+def Banner_load_mem(Name):
+    import urllib.request
+    con = create_connection("a0947494.xsph.ru", "a0947494_teams", "HzqIAQEc", "a0947494_teams")
+    cursor = con.cursor()
+    query = 'SELECT ID FROM Member_list WHERE Member_name = %s AND Team_name = %s'
+    cursor.execute(query,(Name, teamN))
+    file_name = str(cursor.fetchone()[0])
+    print(file_name)
+    try:
+        destination = 'banner.png'
+        url = 'http://a0947494.xsph.ru/uploaded_files/' + file_name + '.png'
+        urllib.request.urlretrieve(url, destination)
+    except:
+        try:
+            destination = 'banner.jpeg'
+            url = 'http://a0947494.xsph.ru/uploaded_files/' + file_name + '.jpeg'
+            urllib.request.urlretrieve(url, destination)
+        except:
+            try:
+                destination = 'banner.pdf'
+                url = 'http://a0947494.xsph.ru/uploaded_files/' + file_name + '.pdf'
+                urllib.request.urlretrieve(url, destination)
+            except:
+                return True
+
+
+test_ar = [["test1", "test"],["test", "test"]]
 # team_reg("test", "test", "test", "test", test_ar)
-# sign_in("test2", "test2")
+sign_in("test", "test")
+# Banner_create("415733.png")
+# Banner_load()
+# Banner_create_mem("415733.png","test")
+Banner_load_mem("test")
 # update_team(Nmember_name="test2", member_name="test1")
